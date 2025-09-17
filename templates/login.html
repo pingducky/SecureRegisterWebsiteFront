@@ -4,28 +4,194 @@
     <meta charset="UTF-8">
     <title>Connexion</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/kute.js@2.2.4/dist/kute.min.js"></script>
 </head>
 <body>
-    <h2>Connexion</h2>
+    <div class="login-container" id="container">
+        <!-- SVG avatar avec yeux -->
+        <svg id="avatar" width="120" height="100" viewBox="0 0 120 100" style="margin-bottom: 20px;">
+            <circle cx="60" cy="50" r="45" fill="#6C63FF" />
+            <g id="eye-left" class="eye">
+                <circle cx="35" cy="40" r="15" fill="#fff" />
+                <circle id="pupil-left" cx="35" cy="40" r="7" fill="#000" />
+            </g>
+            <g id="eye-right" class="eye">
+                <circle cx="85" cy="40" r="15" fill="#fff" />
+                <circle id="pupil-right" cx="85" cy="40" r="7" fill="#000" />
+            </g>
+            <rect x="35" y="70" width="50" height="7" fill="#fff" rx="3" />
+        </svg>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li class="error">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+        <h2>Connexion</h2>
 
-    <form method="POST">
-        <label>Nom d'utilisateur:</label>
-        <input type="text" name="username" required><br><br>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul>
+              {% for message in messages %}
+                <li class="error">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-        <label>Mot de passe:</label>
-        <input type="password" name="password" required><br><br>
+        <form method="POST">
+            <div class="form-group">
+                <label>Nom d'utilisateur:</label>
+                <input type="text" name="username" id="username" required>
+            </div>
 
-        <input type="submit" value="Se connecter">
-    </form>
+            <div class="form-group">
+                <label>Mot de passe:</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+
+            <div id="password-strength-container">
+                <progress id="password-strength-bar" value="0" max="60"></progress>
+            </div>
+
+            <div id="password-rules">
+                <p id="rule-length" class="rule">Au moins 12 caractères</p>
+                <p id="rule-uppercase" class="rule">Au moins 1 majuscule</p>
+                <p id="rule-digit" class="rule">Au moins 1 chiffre</p>
+                <p id="rule-special" class="rule">Au moins 1 caractère spécial</p>
+            </div>
+
+            <input type="submit" value="Se connecter">
+        </form>
+    </div>
+
+<script>
+    // Pupilles qui suivent la souris dans le SVG avatar
+    const svg = document.getElementById('avatar');
+    const eyes = document.querySelectorAll('.eye');
+
+    function movePupils(e) {
+        eyes.forEach(eye => {
+            const eyeball = eye.querySelector('circle:nth-child(1)');
+            const pupil = eye.querySelector('circle:nth-child(2)');
+
+            let cx = +eyeball.getAttribute('cx');
+            let cy = +eyeball.getAttribute('cy');
+            let rEye = +eyeball.getAttribute('r');
+            let rPupil = +pupil.getAttribute('r');
+
+            let pt = svg.createSVGPoint();
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+            let cursor = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+            let dx = cursor.x - cx;
+            let dy = cursor.y - cy;
+            let angle = Math.atan2(dy, dx);
+            let maxDist = rEye - rPupil - 3;
+            let dist = Math.min(maxDist, Math.sqrt(dx * dx + dy * dy));
+
+            let px = cx + dist * Math.cos(angle);
+            let py = cy + dist * Math.sin(angle);
+
+            pupil.setAttribute('cx', px);
+            pupil.setAttribute('cy', py);
+        });
+    }
+
+    const container = document.getElementById('container');
+    container.addEventListener('mousemove', movePupils);
+    container.addEventListener('mouseleave', () => {
+        eyes.forEach(eye => {
+            const eyeball = eye.querySelector('circle:nth-child(1)');
+            const pupil = eye.querySelector('circle:nth-child(2)');
+            pupil.setAttribute('cx', eyeball.getAttribute('cx'));
+            pupil.setAttribute('cy', eyeball.getAttribute('cy'));
+        });
+    });
+
+    // Barre de force mot de passe
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('password-strength-bar');
+
+    // Calcul d'entropie côté client
+    const calculateEntropy = (password) => {
+        let charsetSize = 0;
+        if (/[a-z]/.test(password)) charsetSize += 26;
+        if (/[A-Z]/.test(password)) charsetSize += 26;
+        if (/[0-9]/.test(password)) charsetSize += 10;
+        if (/[^a-zA-Z0-9]/.test(password)) charsetSize += 32;
+        return password.length * Math.log2(charsetSize || 1);
+    };
+
+    // Fonction pour changer la couleur de la barre selon état
+    const setProgressColor = (color) => {
+        // Changement couleur pour Webkit
+        let styleElement = document.getElementById('progress-bar-style');
+        if (styleElement) styleElement.remove();
+
+        styleElement = document.createElement('style');
+        styleElement.id = 'progress-bar-style';
+        styleElement.innerHTML = `
+          #password-strength-bar::-webkit-progress-value {
+            background-color: ${color} !important;
+          }
+        `;
+        document.head.appendChild(styleElement);
+
+        // Firefox : change via ::-moz-progress-bar ne peut pas être ciblé via JS, utilisé couleur fond fallback
+        strengthBar.style.backgroundColor = color;
+    };
+
+    // Mise à jour de la barre avec progression non linéaire (cube) pour lenteur au début
+    const updateStrengthBar = (entropyValue) => {
+        const maxEntropy = 60;
+        let normalized = Math.min(entropyValue, maxEntropy);
+        // Progression lissée en cube pour démarrage lent
+        let progressValue = Math.pow(normalized / maxEntropy, 3) * maxEntropy;
+        strengthBar.value = progressValue;
+
+        if (entropyValue < 45) {
+            setProgressColor('red');
+        } else if (entropyValue < maxEntropy) {
+            setProgressColor('orange');
+        } else {
+            setProgressColor('green');
+        }
+
+        console.log("Entropy:", entropyValue, "Progress (cubed):", progressValue);
+    };
+
+    // Initialisation depuis le serveur (POST)
+    const serverEntropy = {{ entropy|default(0)|tojson }};
+    if (!isNaN(serverEntropy)) {
+        updateStrengthBar(serverEntropy);
+    }
+
+    // Mise à jour en temps réel
+    passwordInput.addEventListener('input', () => {
+        const entropy = calculateEntropy(passwordInput.value);
+        updateStrengthBar(entropy);
+
+        // Validation règles (copie de ta fonction validateRules)
+        validateRules(passwordInput.value);
+    });
+
+    // Validation règles de mot de passe
+    const ruleLength = document.getElementById('rule-length');
+    const ruleUppercase = document.getElementById('rule-uppercase');
+    const ruleDigit = document.getElementById('rule-digit');
+    const ruleSpecial = document.getElementById('rule-special');
+
+    function validateRules(password) {
+        if (password.length >= 12) ruleLength.classList.add('valid');
+        else ruleLength.classList.remove('valid');
+
+        if (/[A-Z]/.test(password)) ruleUppercase.classList.add('valid');
+        else ruleUppercase.classList.remove('valid');
+
+        if (/\d/.test(password)) ruleDigit.classList.add('valid');
+        else ruleDigit.classList.remove('valid');
+
+        if (/[^a-zA-Z0-9]/.test(password)) ruleSpecial.classList.add('valid');
+        else ruleSpecial.classList.remove('valid');
+    }
+</script>
+
 </body>
 </html>

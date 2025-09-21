@@ -1,0 +1,100 @@
+/* Reset de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #6C63FF, #48C6EF);
+}
+
+.login-container {
+    background: #ffffff;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"],
+input[type="password"] {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: border 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #6C63FF;
+}
+
+input[type="submit"] {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #6C63FF;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+input[type="submit"]:hover {
+    background: #574bff;
+}
+
+.error {
+    color: #ff4d4d;
+    margin-bottom: 15px;
+}
+
+/* Lien vers inscription */
+p {
+    margin-top: 20px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+p a {
+    color: #6C63FF;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+p a:hover {
+    color: #574bff;
+}

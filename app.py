@@ -2,11 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import requests
 import math
 import string
+import os
 
 app = Flask(__name__)
 app.secret_key = "une_clé_bien_longue_et_secrète"  # pour flash et sessions
 
-BACKEND_URL = "http://backend:3000"
+#BACKEND_URL = "http://backend:3000"
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:3000")
 
 
 def calculate_entropy(password: str) -> float:

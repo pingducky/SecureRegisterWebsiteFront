@@ -65,14 +65,13 @@
 </body>
 </html>
 <script>
-    // Pupilles qui suivent la souris dans le SVG avatar
     const svg = document.getElementById('avatar');
     const eyes = document.querySelectorAll('.eye');
 
-    let isPasswordFocused = false; // Flag pour savoir si le champ mot de passe est focus
+    let isPasswordFocused = false;
 
     function movePupils(e) {
-        if (isPasswordFocused) return; // On ne suit pas la souris si le mot de passe est focus
+        if (isPasswordFocused) return;
 
         eyes.forEach(eye => {
             const eyeball = eye.querySelector('circle:nth-child(1)');

@@ -61,7 +61,6 @@ def login():
 @app.route("/", methods=["GET", "POST"])
 def register():
     entropy = None
-    redundancy = None  # <-- initialize here
 
     if request.method == "POST":
         username = request.form.get("username")
@@ -81,11 +80,13 @@ def register():
                 data = {}
 
             if response.status_code == 201 and data:
-                flash("Compte créé avec succès ! Connectez-vous.", "register_success")
-                return redirect(url_for("login"))
+                    flash("Compte créé avec succès ! Connectez-vous.", "register_success")
+                    return redirect(url_for("login"))
             else:
                 if data.get("error") == "Password leaked in a previous data breach.":
                     flash("Ce mot de passe est trop courant et a déjà fuité : préférez un mot de passe unique", "register_error")
+                elif data.get("error") == "Password too redundant (predictable, not varied enough).":
+                    flash(data.get("error", response.text or "Erreur inconnue"), "register_error")
                 else:
                     flash(data.get("error", response.text or "Erreur inconnue"), "register_error")
 

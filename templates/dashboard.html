@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
-    <h1>Bienvenue, {{ user.username }} !</h1>
-    <p>Role: {{ user.role }}</p>
-    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+    <div class="dashboard-container">
+        <h1>Bienvenue, {{ user.username }} !</h1>
+        <div class="info-card">
+            <p><strong>Role:</strong> {{ user.role }}</p>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-button">Se déconnecter</a>
+    </div>
 </body>
 </html>

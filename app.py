@@ -8,7 +8,8 @@ app = Flask(__name__)
 app.secret_key = "une_clé_bien_longue_et_secrète"  # pour flash et sessions
 
 #BACKEND_URL = "http://backend:3000"
-BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:3000")
+#BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:3000")
+BACKEND_URL = "https://secureregisterwebsiteback.onrender.com/"
 
 
 def calculate_entropy(password: str) -> float:
